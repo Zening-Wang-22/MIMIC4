@@ -56,7 +56,7 @@ cbc_sepsis3 = bq_table_download(bq_data3)
 
 
 ###################### Join Data Set
-icu_chemistry_cbc_cleaned <- icu_sepsis3 
+icu_chemistry_cbc_cleaned <- icu_sepsis3 |> 
   left_join(chemistry_sepsis3, by = "hadm_id") |> 
   left_join(cbc_sepsis3, by = c("hadm_id", "charttime")) |> 
   select(-subject_id.x, -subject_id.y, -specimen_id.y) |> 
