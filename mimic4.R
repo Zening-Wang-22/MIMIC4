@@ -15,8 +15,8 @@ library(dplyr)
 
 #### Connect to BigQuery#####
 
-projectid = "marine-guard-420203"#replace with your own project id
-bigrquery::bq_auth()#login with google account associated with physionet account
+projectid = "marine-guard-420203" # replace with your own project id
+bigrquery::bq_auth() # login with google account associated with physionet account
 
 #################### 1 ICU
 sql1 <- "
@@ -61,7 +61,7 @@ AND hadm_id IS NOT NULL"
 bq_data4 <- bq_project_query(projectid, query = sql4)
 antibiotic_sepsis3 = bq_table_download(bq_data4)
 
-###################### 5 vasopressin
+###################### 5 vasopressin (no subject_id, filter by stay_id)
 sql5 <- "
 SELECT * FROM `physionet-data.mimiciv_derived.vasopressin`
 WHERE stay_id IN (
@@ -83,7 +83,7 @@ bq_data6 <- bq_project_query(projectid, query = sql6)
 vitalsign_sepsis3 = bq_table_download(bq_data6)
 
 
-###################### 7 demographics
+###################### 7 demographics (use admissions)
 sql7 <- "
 SELECT * FROM `physionet-data.mimiciv_hosp.admissions`
 WHERE subject_id IN (
