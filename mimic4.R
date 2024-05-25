@@ -5,7 +5,6 @@ library(readxl)
 library(gdata)
 library(lubridate)
 library(comorbidity)
-
 library(bigrquery)
 library(tidyr)
 library(DBI)
@@ -21,12 +20,11 @@ bigrquery::bq_auth()#login with google account associated with physionet account
 
 #################### 1 ICU
 sql1 <- "
-SELECT sepsis.*,icu.hadm_id,icu.intime,icu.outtime,icu.los FROM `physionet-data.mimiciv_derived.sepsis3` sepsis
+SELECT sepsis.*, icu.hadm_id, icu.intime, icu.outtime, icu.los FROM `physionet-data.mimiciv_derived.sepsis3` sepsis
 LEFT JOIN `physionet-data.mimiciv_icu.icustays` icu
 ON sepsis.stay_id = icu.stay_id"
 
 bq_data1 <- bq_project_query(projectid, query = sql1)
-
 icu_sepsis3 = bq_table_download(bq_data1)
 
 #################### 2 chemistry
@@ -38,7 +36,6 @@ WHERE subject_id IN (
 AND hadm_id IS NOT NULL"
 
 bq_data2 <- bq_project_query(projectid, query = sql2)
-
 chemistry_sepsis3 = bq_table_download(bq_data2)
 
 
@@ -51,7 +48,6 @@ WHERE subject_id IN (
 AND hadm_id IS NOT NULL"
 
 bq_data3 <- bq_project_query(projectid, query = sql3)
-
 cbc_sepsis3 = bq_table_download(bq_data3)
 
 ###################### 4 antibiotics
@@ -63,7 +59,6 @@ WHERE subject_id IN (
 AND hadm_id IS NOT NULL"
 
 bq_data4 <- bq_project_query(projectid, query = sql4)
-
 antibiotic_sepsis3 = bq_table_download(bq_data4)
 
 ###################### 5 vasopressin
