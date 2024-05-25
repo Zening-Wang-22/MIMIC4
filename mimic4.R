@@ -90,10 +90,11 @@ vitalsign_sepsis3 = bq_table_download(bq_data6)
 
 ###################### 7 demographics
 sql7 <- "
-SELECT * FROM `physionet-data.mimiciii_demo.admissions`
+SELECT * FROM `physionet-data.mimiciv_hosp.admissions`
 WHERE subject_id IN (
   SELECT subject_id FROM `physionet-data.mimiciv_derived.sepsis3` 
-)"
+)
+AND hadm_id IS NOT NULL"
 
 bq_data7 <- bq_project_query(projectid, query = sql7)
 demo_sepsis3 = bq_table_download(bq_data7)
