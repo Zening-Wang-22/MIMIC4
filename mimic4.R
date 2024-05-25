@@ -18,7 +18,7 @@ library(dplyr)
 projectid = "marine-guard-420203" # replace with your own project id
 bigrquery::bq_auth() # login with google account associated with physionet account
 
-#################### 1 ICU.
+#################### 1 ICU
 sql1 <- "
 SELECT sepsis.*, icu.hadm_id, icu.intime, icu.outtime, icu.los FROM `physionet-data.mimiciv_derived.sepsis3` sepsis
 LEFT JOIN `physionet-data.mimiciv_icu.icustays` icu
