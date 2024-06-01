@@ -18,11 +18,13 @@ library(dplyr)
 projectid = "marine-guard-420203" # replace with your own project id
 bigrquery::bq_auth() # login with google account associated with physionet account
 
-#################### 1 ICU
+#################### 1 ICU (filter sepsis within 24 hours, ?abs)
 sql1 <- "
-SELECT sepsis.*, icu.hadm_id, icu.intime, icu.outtime, icu.los FROM `physionet-data.mimiciv_derived.sepsis3` sepsis
+SELECT sepsis.*, icu.hadm_id, icu.intime, icu.outtime, icu.los
+FROM `physionet-data.mimiciv_derived.sepsis3` sepsis
 LEFT JOIN `physionet-data.mimiciv_icu.icustays` icu
-ON sepsis.stay_id = icu.stay_id"
+ON sepsis.stay_id = icu.stay_id
+WHERE ABS(TIMESTAMP_DIFF(icu.intime, sepsis.suspected_infection_time, HOUR)) <= 24"
 
 bq_data1 <- bq_project_query(projectid, query = sql1)
 icu_sepsis3 = bq_table_download(bq_data1)
@@ -118,6 +120,29 @@ WHERE subject_id IN (
 
 bq_data9 <- bq_project_query(projectid, query = sql9)
 gender_sepsis3 = bq_table_download(bq_data9)
+
+###################### 10 blood_differential
+sql10 <- "
+SELECT * FROM `physionet-data.mimiciv_derived.blood_differential`
+WHERE subject_id IN (
+  SELECT subject_id FROM `physionet-data.mimiciv_derived.sepsis3` 
+)
+AND hadm_id IS NOT NULL)"
+
+bq_data10 <- bq_project_query(projectid, query = sql10)
+b_d_sepsis3 = bq_table_download(bq_data10)
+
+###################### 11 bg
+sql11 <- "
+SELECT * FROM `physionet-data.mimiciv_derived.bg`
+WHERE subject_id IN (
+  SELECT subject_id FROM `physionet-data.mimiciv_derived.sepsis3` 
+)
+AND hadm_id IS NOT NULL
+AND specimen = 'ART.'"
+
+bq_data11 <- bq_project_query(projectid, query = sql11)
+bg_sepsis3 = bq_table_download(bq_data11)
 
 ###################### Join Data Set (will revise later)
 # icu_chemistry_cbc_cleaned <- icu_sepsis3 |> 
