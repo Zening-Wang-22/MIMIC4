@@ -61,9 +61,9 @@ AND hadm_id IS NOT NULL"
 bq_data4 <- bq_project_query(projectid, query = sql4)
 antibiotic_sepsis3 = bq_table_download(bq_data4)
 
-###################### 5 vasopressin (no subject_id, filter by stay_id)
+###################### 5 norepinephrine (no subject_id, filter by stay_id)
 sql5 <- "
-SELECT * FROM `physionet-data.mimiciv_derived.vasopressin`
+SELECT * FROM `physionet-data.mimiciv_derived.norepinephrine_equivalent_dose`
 WHERE stay_id IN (
   SELECT stay_id FROM `physionet-data.mimiciv_derived.sepsis3` 
 )"
@@ -83,16 +83,41 @@ bq_data6 <- bq_project_query(projectid, query = sql6)
 vitalsign_sepsis3 = bq_table_download(bq_data6)
 
 
-###################### 7 demographics (use admissions)
+###################### 7 race + admission type
 sql7 <- "
-SELECT * FROM `physionet-data.mimiciv_hosp.admissions`
+SELECT a.subject_id, a.hadm_id, a.admission_type, a.race
+FROM `physionet-data.mimiciv_hosp.admissions` AS a
 WHERE subject_id IN (
   SELECT subject_id FROM `physionet-data.mimiciv_derived.sepsis3` 
 )
 AND hadm_id IS NOT NULL"
 
 bq_data7 <- bq_project_query(projectid, query = sql7)
-demo_sepsis3 = bq_table_download(bq_data7)
+race_adtype_sepsis3 = bq_table_download(bq_data7)
+
+
+###################### 8 age
+sql8 <- "
+SELECT a.subject_id, a.hadm_id, a.age
+FROM `physionet-data.mimiciv_derived.age` AS a
+WHERE subject_id IN (
+  SELECT subject_id FROM `physionet-data.mimiciv_derived.sepsis3` 
+)
+AND hadm_id IS NOT NULL"
+
+bq_data8 <- bq_project_query(projectid, query = sql8)
+age_sepsis3 = bq_table_download(bq_data8)
+
+###################### 9 gender
+sql9 <- "
+SELECT p.subject_id, p.gender
+FROM `physionet-data.mimiciv_hosp.patients` AS p
+WHERE subject_id IN (
+  SELECT subject_id FROM `physionet-data.mimiciv_derived.sepsis3` 
+)"
+
+bq_data9 <- bq_project_query(projectid, query = sql9)
+gender_sepsis3 = bq_table_download(bq_data9)
 
 ###################### Join Data Set (will revise later)
 # icu_chemistry_cbc_cleaned <- icu_sepsis3 |> 
