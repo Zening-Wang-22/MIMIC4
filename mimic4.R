@@ -18,7 +18,7 @@ library(dplyr)
 projectid = "marine-guard-420203" # replace with your own project id
 bigrquery::bq_auth() # login with google account associated with physionet account
 
-#################### 1 ICU (filter sepsis within 24 hours, ?abs)
+#################### 1 ICU
 sql1 <- "
 SELECT sepsis.*, icu.hadm_id, icu.intime, icu.outtime, icu.los
 FROM `physionet-data.mimiciv_derived.sepsis3` sepsis
@@ -33,7 +33,7 @@ icu_sepsis3 = bq_table_download(bq_data1)
 sql2 <- "
 SELECT * FROM `physionet-data.mimiciv_derived.chemistry`
 WHERE subject_id IN (
-  SELECT subject_id FROM `physionet-data.mimiciv_derived.sepsis3` 
+  SELECT subject_id FROM `marine-guard-420203.example.icu` 
 )
 AND hadm_id IS NOT NULL"
 
@@ -45,7 +45,7 @@ chemistry_sepsis3 = bq_table_download(bq_data2)
 sql3 <- "
 SELECT * FROM `physionet-data.mimiciv_derived.complete_blood_count`
 WHERE subject_id IN (
-  SELECT subject_id FROM `physionet-data.mimiciv_derived.sepsis3` 
+  SELECT subject_id FROM `marine-guard-420203.example.icu` 
 )
 AND hadm_id IS NOT NULL"
 
@@ -56,7 +56,7 @@ cbc_sepsis3 = bq_table_download(bq_data3)
 sql4 <- "
 SELECT * FROM `physionet-data.mimiciv_derived.antibiotic`
 WHERE subject_id IN (
-  SELECT subject_id FROM `physionet-data.mimiciv_derived.sepsis3` 
+  SELECT subject_id FROM `marine-guard-420203.example.icu` 
 )
 AND hadm_id IS NOT NULL"
 
@@ -67,7 +67,7 @@ antibiotic_sepsis3 = bq_table_download(bq_data4)
 sql5 <- "
 SELECT * FROM `physionet-data.mimiciv_derived.norepinephrine_equivalent_dose`
 WHERE stay_id IN (
-  SELECT stay_id FROM `physionet-data.mimiciv_derived.sepsis3` 
+  SELECT stay_id FROM `marine-guard-420203.example.icu` 
 )"
 
 bq_data5 <- bq_project_query(projectid, query = sql5)
@@ -78,7 +78,7 @@ vasopressin_sepsis3 = bq_table_download(bq_data5)
 sql6 <- "
 SELECT * FROM `physionet-data.mimiciv_derived.vitalsign`
 WHERE subject_id IN (
-  SELECT subject_id FROM `physionet-data.mimiciv_derived.sepsis3` 
+  SELECT subject_id FROM `marine-guard-420203.example.icu` 
 )"
 
 bq_data6 <- bq_project_query(projectid, query = sql6)
@@ -90,7 +90,7 @@ sql7 <- "
 SELECT a.subject_id, a.hadm_id, a.admission_type, a.race
 FROM `physionet-data.mimiciv_hosp.admissions` AS a
 WHERE subject_id IN (
-  SELECT subject_id FROM `physionet-data.mimiciv_derived.sepsis3` 
+  SELECT subject_id FROM `marine-guard-420203.example.icu` 
 )
 AND hadm_id IS NOT NULL"
 
@@ -103,7 +103,7 @@ sql8 <- "
 SELECT a.subject_id, a.hadm_id, a.age
 FROM `physionet-data.mimiciv_derived.age` AS a
 WHERE subject_id IN (
-  SELECT subject_id FROM `physionet-data.mimiciv_derived.sepsis3` 
+  SELECT subject_id FROM `marine-guard-420203.example.icu` 
 )
 AND hadm_id IS NOT NULL"
 
@@ -115,7 +115,7 @@ sql9 <- "
 SELECT p.subject_id, p.gender
 FROM `physionet-data.mimiciv_hosp.patients` AS p
 WHERE subject_id IN (
-  SELECT subject_id FROM `physionet-data.mimiciv_derived.sepsis3` 
+  SELECT subject_id FROM `marine-guard-420203.example.icu` 
 )"
 
 bq_data9 <- bq_project_query(projectid, query = sql9)
@@ -125,9 +125,9 @@ gender_sepsis3 = bq_table_download(bq_data9)
 sql10 <- "
 SELECT * FROM `physionet-data.mimiciv_derived.blood_differential`
 WHERE subject_id IN (
-  SELECT subject_id FROM `physionet-data.mimiciv_derived.sepsis3` 
+  SELECT subject_id FROM `marine-guard-420203.example.icu` 
 )
-AND hadm_id IS NOT NULL)"
+AND hadm_id IS NOT NULL"
 
 bq_data10 <- bq_project_query(projectid, query = sql10)
 b_d_sepsis3 = bq_table_download(bq_data10)
@@ -136,7 +136,7 @@ b_d_sepsis3 = bq_table_download(bq_data10)
 sql11 <- "
 SELECT * FROM `physionet-data.mimiciv_derived.bg`
 WHERE subject_id IN (
-  SELECT subject_id FROM `physionet-data.mimiciv_derived.sepsis3` 
+  SELECT subject_id FROM `marine-guard-420203.example.icu` 
 )
 AND hadm_id IS NOT NULL
 AND specimen = 'ART.'"
@@ -145,16 +145,22 @@ bq_data11 <- bq_project_query(projectid, query = sql11)
 bg_sepsis3 = bq_table_download(bq_data11)
 
 ###################### Join Data Set (will revise later)
-# icu_chemistry_cbc_cleaned <- icu_sepsis3 |> 
-#   left_join(chemistry_sepsis3, by = "hadm_id") |> 
-#   left_join(cbc_sepsis3, by = c("hadm_id", "charttime")) |> 
-#   select(-subject_id.x, -subject_id.y, -specimen_id.y) |> 
-#   rename(specimen_id = specimen_id.x) |> 
-#   select(subject_id, stay_id, hadm_id, specimen_id, everything())
+sepsis3_part1 <- icu_sepsis3 |> 
+  left_join(age_sepsis3, by = c("subject_id", "hadm_id")) |> 
+  left_join(gender_sepsis3, by = "subject_id") |> 
+  left_join(race_adtype_sepsis3, by = c("subject_id", "hadm_id")) |> 
+  left_join(antibiotic_sepsis3, by = c("subject_id", "hadm_id")) |> 
+  left_join(bg_sepsis3, by = c("subject_id", "hadm_id")) 
+
+
+sepsis3_part2 <- icu_sepsis3 |> 
+  left_join(chemistry_sepsis3, by = c("subject_id" = "subject_id", "hadm_id" = "hadm_id")) |> 
+  left_join(vasopressin_sepsis3, by = "stay_id") 
+
+sepsis3_part3 <- icu_sepsis3 |> 
+  left_join(vitalsign_sepsis3, by = c("subject_id", "stay_id"))
 
 ########################### Save 10 lines
 # icu_chemistry_cbc_cleaned_top10 <- head(icu_chemistry_cbc_cleaned, 10)
 # write.csv(icu_chemistry_cbc_cleaned_top10, "icu_chemistry_cbc_cleaned_top10.csv", row.names = FALSE)
-
-
-
+write.csv(sepsis3_part3, "sepsis3_part3.csv", row.names = FALSE)
