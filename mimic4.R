@@ -160,7 +160,7 @@ sepsis3_part2 <- icu_sepsis3 |>
 sepsis3_part3 <- icu_sepsis3 |> 
   left_join(vitalsign_sepsis3, by = c("subject_id", "stay_id"))
 
-########################### Save 10 lines
+########################### Save 
 # icu_chemistry_cbc_cleaned_top10 <- head(icu_chemistry_cbc_cleaned, 10)
 # write.csv(icu_chemistry_cbc_cleaned_top10, "icu_chemistry_cbc_cleaned_top10.csv", row.names = FALSE)
-write.csv(sepsis3_part3, "sepsis3_part3.csv", row.names = FALSE)
+# write.csv(sepsis3_part3, "sepsis3_part3.csv", row.names = FALSE)
