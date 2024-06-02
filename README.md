@@ -10,4 +10,4 @@ The `mimic4.R` script within this repository is used to generate the desired dat
 The `mimic4.R` file is configured to connect with Google BigQuery. We utilize SQL within R to query and manipulate data directly from BigQuery.
 
 ### Example Dataset
-Included in this repository is an example dataset named `icu_chemistry_cbc_cleaned_top10.csv`. This file represents a preliminary merged dataset comprised of only three subtables generated from the `mimic4.R` script. We will update the complete dataset later. 
+Included in this repository is an example dataset named `part1.csv`. This file represents a preliminary merged dataset. We will update the complete dataset later. 
